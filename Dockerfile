@@ -17,11 +17,11 @@ RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o lk-jwt-service
 # - https://github.com/golang/go/blob/go1.24.0/src/net/conf.go#L343
 RUN echo 'hosts: files dns' > /etc/nsswitch.conf
 
-FROM scratch
+FROM alpine
+
+RUN apk add --no-cache curl bind-tools
 
 COPY --from=builder /proj/lk-jwt-service /lk-jwt-service
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /etc/nsswitch.conf /etc/nsswitch.conf
 
 EXPOSE 8080
 

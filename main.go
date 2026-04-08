@@ -183,6 +183,16 @@ var exchangeOpenIdUserInfo = func(
 	}
 	client := fclient.NewClient(fclient.WithWellKnownSRVLookups(true), fclient.WithSkipVerify(skipVerifyTLS))
 
+	// Debug: resolve the server to see where fclient will connect
+	results, resolveErr := fclient.ResolveServer(ctx, spec.ServerName(token.MatrixServerName))
+	if resolveErr != nil {
+		log.Printf("Resolution error for %s: %v", token.MatrixServerName, resolveErr)
+	} else {
+		for i, r := range results {
+			log.Printf("Resolution result[%d]: Destination=%s Host=%s TLSServerName=%s", i, r.Destination, r.Host, r.TLSServerName)
+		}
+	}
+
 	// validate the openid token by getting the user's ID
 	userinfo, err := client.LookupUserInfo(
 		ctx, spec.ServerName(token.MatrixServerName), token.AccessToken,
@@ -417,6 +427,8 @@ func (h *Handler) handle_legacy(w http.ResponseWriter, r *http.Request) {
 			writeMatrixError(w, http.StatusBadRequest, "M_NOT_JSON", "Error reading request")
 			return
 		}
+
+		log.Printf("Request body: %s", string(body))
 
 		var sfuAccessResponse *SFUResponse
 
